@@ -1,0 +1,35 @@
+name: chicago-taxi
+services:
+  storage:
+    image: chrislusf/seaweedfs:3.80
+    command: server -dir=/data -ip=storage -volume.max=8 -master.volumeSizeLimitMB=256 -filer -s3 -s3.config=/etc/seaweedfs/s3.json
+    ports:
+      - "127.0.0.1:9000:8333"
+      - "127.0.0.1:8888:8888"
+    volumes:
+      - lake:/data
+      - ./infra/s3.json:/etc/seaweedfs/s3.json:ro
+      - ./infra/filer.toml:/etc/seaweedfs/filer.toml:ro
+    mem_limit: 1g
+  dagster:
+    build: .
+    depends_on:
+      - storage
+    environment:
+      S3_ENDPOINT: http://storage:8333
+      AWS_ACCESS_KEY_ID: taxi_local
+      AWS_SECRET_ACCESS_KEY: taxi_local_password
+      S3_BUCKET: chicago-taxi
+      PAGE_SIZE: ${PAGE_SIZE:-5000}
+      SODA_APP_TOKEN: ${SODA_APP_TOKEN:-}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - dagster_home:/opt/dagster/home
+      - ./taxi_pipeline:/app/taxi_pipeline:ro
+      - ./tests:/app/tests:ro
+    mem_limit: 5g
+    cpus: 2
+volumes:
+  lake:
+  dagster_home:

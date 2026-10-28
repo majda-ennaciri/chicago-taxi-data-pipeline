@@ -1,0 +1,11 @@
+{
+  "identities": [
+    {
+      "name": "local-development",
+      "credentials": [
+        {"accessKey": "taxi_local", "secretKey": "taxi_local_password"}
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
